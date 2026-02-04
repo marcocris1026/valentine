@@ -7,27 +7,151 @@
     <link rel="stylesheet" href="./yes_style.css">
 </head>
 <body>
+    <div id="celebration" class="celebration-layer" aria-hidden="true"></div>
     <div class="container">
         <h1 class="header_text">Knew you would say yes!</h1>
         <div class="gif_container">
             <img src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExeTdlZXl0NjNrM3dhN3BnMWExZnc5OHJtNHhzc3NoYmdpYnUxdXV5ZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/jU9m03NG7bw88rwzok/giphy.gif" alt="The Office dance GIF">
         </div>
-        <!-- <div class="music_container">
-            <audio id="raye-audio" controls autoplay muted preload="auto" playsinline>
+        <div class="music_container">
+            <audio id="raye-audio" autoplay muted preload="auto" playsinline>
                 <source src="./RAYE - WHERE IS MY HUSBAND!.mp3" type="audio/mpeg">
                 Your browser does not support the audio element.
             </audio>
-        </div> -->
+            <div class="music_controls" role="group" aria-label="Controlli musica">
+                <button id="play-toggle" class="music_button" type="button" aria-label="Play o pausa"></button>
+                <button id="stop-toggle" class="music_button" type="button" aria-label="Stop"></button>
+                <button id="mute-toggle" class="music_button" type="button" aria-label="Audio on o off"></button>
+            </div>
+            <div class="seek_container" aria-label="Avanzamento musica">
+                <input id="seek-bar" class="seek_bar" type="range" min="0" max="100" value="0" step="0.1">
+                <div class="time_labels">
+                    <span id="current-time">0:00</span>
+                    <span id="duration-time">0:00</span>
+                </div>
+            </div>
+        </div>
     </div>
     <script>
         const audio = document.getElementById("raye-audio");
+        const playToggle = document.getElementById("play-toggle");
+        const stopToggle = document.getElementById("stop-toggle");
+        const muteToggle = document.getElementById("mute-toggle");
+        const seekBar = document.getElementById("seek-bar");
+        const currentTimeEl = document.getElementById("current-time");
+        const durationEl = document.getElementById("duration-time");
+        const celebration = document.getElementById("celebration");
         let started = false;
-        audio.addEventListener("loadedmetadata", () => {
-            if (started) return;
-            started = true;
+        let seeking = false;
+
+        const symbols = {
+            play: "\u25B6",
+            pause: "\u23F8",
+            stop: "\u23F9",
+            speakerOn: "\uD83D\uDD0A",
+            speakerOff: "\uD83D\uDD07"
+        };
+
+        const formatTime = (seconds) => {
+            if (!Number.isFinite(seconds)) return "0:00";
+            const minutes = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${minutes}:${secs.toString().padStart(2, "0")}`;
+        };
+
+        const updatePlayLabel = () => {
+            playToggle.textContent = audio.paused ? symbols.play : symbols.pause;
+            playToggle.setAttribute("aria-pressed", String(!audio.paused));
+        };
+
+        const updateMuteLabel = () => {
+            muteToggle.textContent = audio.muted ? symbols.speakerOff : symbols.speakerOn;
+            muteToggle.setAttribute("aria-pressed", String(!audio.muted));
+        };
+
+        const ensureStartTime = () => {
+            if (started || audio.readyState < 1) return;
             audio.currentTime = 138;
+            started = true;
+        };
+
+        const updateSeekUI = () => {
+            if (!seeking) {
+                seekBar.value = audio.currentTime.toString();
+            }
+            currentTimeEl.textContent = formatTime(audio.currentTime);
+        };
+
+        audio.addEventListener("loadedmetadata", () => {
+            ensureStartTime();
+            seekBar.max = audio.duration.toString();
+            durationEl.textContent = formatTime(audio.duration);
             audio.play().catch(() => {});
         });
+
+        audio.addEventListener("play", updatePlayLabel);
+        audio.addEventListener("pause", updatePlayLabel);
+        audio.addEventListener("timeupdate", updateSeekUI);
+        audio.addEventListener("ended", updatePlayLabel);
+
+        playToggle.addEventListener("click", async () => {
+            ensureStartTime();
+            if (audio.paused) {
+                try {
+                    await audio.play();
+                } catch (_) {}
+            } else {
+                audio.pause();
+            }
+            updatePlayLabel();
+        });
+
+        stopToggle.addEventListener("click", () => {
+            ensureStartTime();
+            audio.pause();
+            audio.currentTime = 138;
+            updatePlayLabel();
+            updateSeekUI();
+        });
+
+        muteToggle.addEventListener("click", () => {
+            audio.muted = !audio.muted;
+            updateMuteLabel();
+        });
+
+        seekBar.addEventListener("input", () => {
+            seeking = true;
+            currentTimeEl.textContent = formatTime(Number(seekBar.value));
+        });
+
+        seekBar.addEventListener("change", () => {
+            audio.currentTime = Number(seekBar.value);
+            seeking = false;
+        });
+
+        const burstHearts = (count) => {
+            for (let i = 0; i < count; i += 1) {
+                const heart = document.createElement("span");
+                heart.className = "celebration-heart";
+                heart.textContent = "\u2665";
+                heart.style.left = `${Math.random() * 100}%`;
+                heart.style.fontSize = `${12 + Math.random() * 18}px`;
+                heart.style.animationDelay = `${Math.random() * 0.8}s`;
+                heart.style.animationDuration = `${3.5 + Math.random() * 2}s`;
+                celebration.appendChild(heart);
+                setTimeout(() => heart.remove(), 7000);
+            }
+        };
+
+        window.addEventListener("load", () => {
+            burstHearts(26);
+            setTimeout(() => burstHearts(18), 600);
+            setTimeout(() => burstHearts(18), 1200);
+        });
+
+        updatePlayLabel();
+        updateMuteLabel();
+        stopToggle.textContent = symbols.stop;
     </script>
 </body>
 </html>

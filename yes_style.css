@@ -6,6 +6,29 @@ body {
     margin: 0;
     background-color: #f9e3e3;
     font-family: 'Arial', sans-serif;
+    overflow-x: hidden;
+}
+
+.celebration-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+}
+
+.celebration-heart {
+    position: absolute;
+    bottom: -20px;
+    color: rgba(211, 47, 47, 0.85);
+    animation-name: floatHearts;
+    animation-timing-function: ease-in-out;
+    animation-fill-mode: both;
+}
+
+.container {
+    position: relative;
+    z-index: 1;
 }
 
 .container {
@@ -30,8 +53,75 @@ body {
 }
 
 .music_container audio {
-    width: 100%;
-    max-width: 480px;
+    display: none;
+}
+
+.music_controls {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.music_button {
+    background-color: #d32f2f;
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    width: 52px;
+    height: 52px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: 0 6px 16px rgba(211, 47, 47, 0.25);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.music_button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(211, 47, 47, 0.3);
+}
+
+.music_button:active {
+    transform: translateY(1px);
+}
+
+.music_button:focus-visible {
+    outline: 3px solid rgba(211, 47, 47, 0.35);
+    outline-offset: 2px;
+}
+
+.seek_container {
+    margin-top: 14px;
+    display: grid;
+    gap: 8px;
+    justify-items: center;
+}
+
+.seek_bar {
+    width: min(480px, 90vw);
+    accent-color: #d32f2f;
+}
+
+.time_labels {
+    width: min(480px, 90vw);
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.95rem;
+    color: #a33636;
+}
+
+@keyframes floatHearts {
+    0% {
+        transform: translateY(0) scale(0.9);
+        opacity: 0;
+    }
+    15% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-120vh) scale(1.2);
+        opacity: 0;
+    }
 }
 
 @media (max-width: 600px) {
